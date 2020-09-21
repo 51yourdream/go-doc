@@ -1,2 +1,2 @@
 # go-doc
-golang 学期文档
+golang 学习文档
