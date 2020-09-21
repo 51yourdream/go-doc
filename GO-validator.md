@@ -337,7 +337,146 @@ todo
 
 ## 比较相关验证
 
+### eq
+
+用途：对于字符串和数字，eq将确保该值等于给定的参数。对于切片，数组和map，验证元素个数是否等于给定个数
+
+### gt
+
+用途：对于数字，这将确保该值大于给定的参数。对于字符串，它会检查字符串长度是否大于该字符数。对于切片，数组和map，它会验证元素个数是否大于给定个数。
+
+### gte
+
+用途：对于数字，这将确保该值大于等于给定的参数。对于字符串，它会检查字符串长度是否大于等于该字符数。对于切片，数组和map，它会验证元素个数是否的大于等于给定个数。
+
+### lt
+
+用途：对于数字，这将确保该值小于给定的参数。对于字符串，它会检查字符串长度是否小于该字符数。对于切片，数组和map，它会验证元素个数是否小于给定个数。
+
+### lte
+
+用途：对于数字，这将确保该值小于等于给定的参数。对于字符串，它会检查字符串长度是否小于等于该字符数。对于切片，数组和map，它会验证元素个数是否小于等于给定个数。
+
+### ne
+
+用途：对于字符串和数字，ne将确保该值不等于给定的参数。对于切片，数组和map，验证元素个数是否不等于给定个数
+
 ## 其他验证
+
+### dir
+
+用途：验证给定的字符串是否是一个合法的目录，并且是否存在当前机器上
+
+### endswith
+
+用途：验证字符串是否一xxx结尾；eg：endswith=hi，字符串是否以"hi"结尾
+
+### excludes
+
+用途：验证字符串不能包含指定字符串；eg：excludes=hi，字符串不能包含"hi"
+
+### excludesall
+
+用途：验证字符串值在子字符串值中是否包含任何Unicode code points
+
+### excludesrune
+
+用途：验证字符串值是否包含提供的符文值
+
+### file
+
+用途：验证字符串值是否包含有效的文件路径，并且该文件存在于当前计算机上
+
+### isdefault
+
+用途：验证了该值是默认值，与必填值相反
+
+### len
+
+用途：对于数字，长度将确保该值等于给定的参数。对于字符串，它会检查字符串长度是否与字符数完全相同。对于切片，数组和map，验证元素个数是否与给定值相等；eg：len=10，10个字符中英文算一个
+
+### max
+
+用途：对于数字，max将确保该值小于或等于给定的参数。对于字符串，它会检查字符串长度是否最多为该字符数。对于切片，数组和map，验证元素个数小于等于给定的数值
+
+### min
+
+用途：对于数字，min将确保该值大于或等于给定的参数。对于字符串，它会检查字符串长度是否最少为该字符数。对于切片，数组和map，验证元素个数大于等于给定的数值
+
+### oneof
+
+用途：对于字符串，整数和uint，oneof将确保该值是参数中的值之一。参数应该是由空格分隔的值列表。值可以是字符串或数字；eg：oneof=1 3 输入值必须是1或者3其中的任意一个
+
+### required
+
+用途：验证该值不是数据类型的默认零值。数字不为０，字符串不为 " ", slices, maps, pointers, interfaces, channels and functions 不为 nil
+
+### required_with
+
+用途：required_with=Field1 只有Field1 required的时候，当前字段验证才生效
+
+### required_with_all
+
+用途：required_with_all=Field1 Field2 只有Field1 Field2 required的时候，当前字段验证才生效
+
+### required_without
+
+用途：required_without=Field1 只有Field1 没有值或者不存在的时候，当前字段验证才生效
+
+### required_without_all
+
+用途：required_without_all=Field1 Field2 只有Field1 Field2 都没有值或者都不存在的时候，当前字段验证才生效
+
+### unique
+
+用途：对于数组和切片，unique将确保没有重复项。对于map，unique将确保没有重复值
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/go-playground/validator/v10"
+)
+
+var validate *validator.Validate
+
+func main()  {
+	validate = validator.New()
+
+	type Elem struct{
+		Name string
+		Age  uint8
+	}
+	var mystruct struct{
+		Name  string 	`validate:"len=2"`
+		Hobby []string  `validate:"unique"`
+		Person []Elem	`validate:"unique=Name,unique=Age"`
+
+	}
+	mystruct.Name = "12"
+	mystruct.Hobby = []string{"a", "b"}
+	mystruct.Person = []Elem{
+		{
+			Name:"lisi",
+			Age: 23,
+		},
+		{
+			Name:"lisi",
+			Age: 23,
+		},
+	}
+	err := validate.Struct(mystruct)
+	validationErrors, ok := err.(validator.ValidationErrors)
+	fmt.Println(validationErrors, ok)
+}
+```
+
+
+
+
+
+
 
 
 
