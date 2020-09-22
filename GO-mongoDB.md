@@ -1,5 +1,3 @@
-
-
 ## 数据类型
 
 #### MySQL和MongoDB对比
@@ -225,7 +223,7 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 ### 使用查询操作符指定条件
 
-A [*query filter document*](https://mongoing.com/docs/core/document.html#document-query-filter) can use the [*query operators*](https://mongoing.com/docs/reference/operator/query.html#query-selectors) to specify conditions in the following form:
+查询过滤器文档可以使用查询运算符，格式如下：
 
 ```shell
 # mongoDB命令行
@@ -255,7 +253,7 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 尽管你也可以使用 [`$or`](https://mongoing.com/docs/reference/operator/query/or.html#op._S_or) 操作符表示这个查询，但是在相同字段执行等于检查时，建议使用 [`$in`](https://mongoing.com/docs/reference/operator/query/in.html#op._S_in) 而不是 [`$or`](https://mongoing.com/docs/reference/operator/query/or.html#op._S_or) 。
 
-查阅 [*Query and Projection Operators*](https://mongoing.com/docs/reference/operator/query.html) 文档了解查询操作符的完整列表。
+[点击查看查询操作符的完整列表](https://mongoing.com/docs/reference/operator/query.html)。
 
 ### 指定 `AND` 条件
 
@@ -280,9 +278,7 @@ filter :=  bson.M{
 cursor, err := db.Collection("users").Find(ctx, filter)
 ```
 
-
-
-查阅 [*comparison operators*](https://mongoing.com/docs/reference/operator/query-comparison.html#query-selectors-comparison) 了解其它比较操作符。
+[点击查看更多比较操作符](https://mongoing.com/docs/reference/operator/query-comparison.html#query-selectors-comparison)
 
 ### 指定 `OR` 条件
 
@@ -315,17 +311,11 @@ filter :=  bson.M{
 cursor, err := db.Collection("users").Find(ctx, filter)
 ```
 
-
-
-注解
-
-使用 [*comparison operators*](https://mongoing.com/docs/reference/operator/query-comparison.html#query-selectors-comparison) 的查询服从 [*Type Bracketing*](https://mongoing.com/docs/reference/method/db.collection.find.html#type-bracketing) 。
-
 ### 指定 `AND` 和 `OR` 条件
 
 通过使用附加的子句，你可以指定匹配文档的精确条件。
 
-“在下面的示例中，复合查询文档选择集合中`status`` 等于 `"A"` **并且** *要么* `age` 小于 ([`$lt`](https://mongoing.com/docs/reference/operator/query/lt.html#op._S_lt)) `30` *要么* `type` 等于 `1` 的所有文档：
+在下面的示例中，复合查询文档选择集合中`status` 等于 `"A"` **并且** *要么* `age`  `$lt` `30` *要么* `type` 等于 `1` 的所有文档：
 
 ```shell
 # mongoDB命令行
@@ -360,13 +350,13 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 ## 嵌入文档上的查询
 
-当字段中包含嵌入文档时，查询可以指定嵌入文档中的精确匹配或者使用 “[*dot notation*](https://mongoing.com/docs/reference/glossary.html#term-dot-notation) 对嵌入文档中的单个字段指定匹配。
+当字段中包含嵌入文档时，查询可以指定嵌入文档中的精确匹配或者使用 "*.*" 对嵌入文档中的单个字段指定匹配。
 
 ### 嵌入文档上的精确匹配
 
-使用``{ <field>: <value> }``并且 “<value>” 为要匹配文档的查询文档，来指定匹配整个内嵌文档的完全相等条件.(要使)相等条件匹配上内嵌文档需要指定 `<value>` 包括字段顺序的 *精确* 匹配。
+使用``{ <field>: <value> }``并且 <value> 为要匹配文档的查询文档，来指定匹配整个内嵌文档的完全相等条件.(要使)相等条件匹配上内嵌文档需要指定 `<value>` 包括字段顺序的 *精确* 匹配。
 
-在下面的例子中,查询匹配所有 `favorites` 字段是以该种**顺序**只包含 等于 `"Picasso"``的 ``artist` 和等于 `"pizza"` 的 `food` 字段的内嵌文档：
+在下面的例子中,查询匹配所有 `favorites` 字段是以该种**顺序**只包含 等于 `Picasso`的 `artist` 和等于 `pizza` 的 `food` 字段的内嵌文档：
 
 注意：**有序性**，值相等还不行，顺序还必须一致；
 
@@ -386,6 +376,16 @@ filter :=  bson.M{
 }
 cursor, err := db.Collection("users").Find(ctx, filter)
 ```
+
+```json
+{ artist: "Picasso", food: "pizza" }
+换成
+{ food: "pizza", artist: "Picasso"}
+顺序不对查不出数据，在写查询条件的时候以及入数的时候都得统一
+写入顺序不一致，导致查询bug
+```
+
+
 
 查询匹配下面的文档：
 
@@ -458,9 +458,9 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 ### 嵌入文档中字段上的等于匹配
 
-使用 [*dot notation*](https://mongoing.com/docs/reference/glossary.html#term-dot-notation) 匹配内嵌文档中的特定的字段。内嵌文档中特定字段的相等匹配将筛选出集合中内嵌文档包含该指定字段并等于指定的值的文档。内嵌文档可以包含其他的字段。
+使用"**.**"匹配内嵌文档中的特定的字段。内嵌文档中特定字段的相等匹配将筛选出集合中内嵌文档包含该指定字段并等于指定的值的文档。内嵌文档可以包含其他的字段。
 
-在下面的例子中,查询使用 [*dot notation*](https://mongoing.com/docs/reference/glossary.html#term-dot-notation) 匹配所有 `favorites` 字段是包含等于 `"Picasso"` 的字段 [``](https://mongoing.com/docs/tutorial/query-documents.html#id1)artist``(可能还包含其他字段) 的内嵌文档：
+在下面的例子中,查询使用 "**.**" 匹配所有 `favorites` 字段是包含等于 `Picasso` 的字段 `artist`(可能还包含其他字段) 的内嵌文档：
 
 ```shell
 # mongoDB命令行
@@ -469,12 +469,15 @@ db.users.find( { "favorites.artist": "Picasso" } )
 
 ```go
 //go语言中
+//这里只是类比
 //mysql where favorites.artist = "Picasso"
 filter :=  bson.M{
   "favorites.artist": "Picasso",
 }
 cursor, err := db.Collection("users").Find(ctx, filter)
 ```
+
+注意：**favorites.artist=Picasso** 不存在顺序关系
 
 查询匹配下面的文档：
 
@@ -546,7 +549,7 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 ## 数组上的查询
 
-当字段包含数组，你可查询精确的匹配数组或数组中特定的值。如果数组包含嵌入文档，你可以使用 [*dot notation*](https://mongoing.com/docs/reference/glossary.html#term-dot-notation) 查询内嵌文档中特定的字段。
+当字段包含数组，你可查询精确的匹配数组或数组中特定的值。如果数组包含嵌入文档，你可以使用"**.**"查询内嵌文档中特定的字段。
 
 如果你使用 [`$elemMatch`](https://mongoing.com/docs/reference/operator/query/elemMatch.html#op._S_elemMatch) 操作符指定多个查询条件，数组必须包含至少一个元素满足所有条件。参见 [*单个元素满足查询条件*](https://mongoing.com/docs/tutorial/query-documents.html#single-element-satisfies-criteria)。
 
@@ -556,7 +559,7 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 ### 数组上的精确匹配
 
-要指定数组相等匹配，使用查询文档 `{ <field>: <value> }` 其中 `<value>` 是匹配的数组。数组的相等匹配要求数组字段与指定的匹配数组 `<value>` *完全* 相符，包括数组元素的顺序。
+要指定数组相等匹配，使用查询文档 `{ <field>: <value> }` 其中 `<value>` 是匹配的数组。数组的相等匹配要求数组字段与指定的匹配数组 `<value>` *完全* 相符，包括**数组元素的顺序**。
 
 下面的例子查询所有字段 `badges` 是一个正好有两个元素: `"blue"` 和 `"black"` (以这种**顺序**)的数组的文档：
 
@@ -631,7 +634,7 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 等于匹配可以指定匹配数组中的单一元素。如果数组中至少 *一个* 元素包含特定的值，就可以匹配这些声明。
 
-下面的示例查询 `badges` 是一个数组字段并且包含 [``](https://mongoing.com/docs/tutorial/query-documents.html#id1)“black”[``](https://mongoing.com/docs/tutorial/query-documents.html#id3)作为其数组元素的所有文档。
+下面的示例查询 `badges` 是一个数组字段并且包含`black`作为其数组元素的所有文档。
 
 ```shell
 # mongoDB命令行
@@ -688,9 +691,9 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 ### 匹配数组中的指定元素
 
-等于匹配可以指定匹配数组某一特定所有或位置的元素，使用 [*dot notation*](https://mongoing.com/docs/reference/glossary.html#term-dot-notation) 。
+等于匹配可以指定匹配数组某一特定所有或位置的元素，使用"**.**"。
 
-在下面的例子中,查询使用 the [*dot notation*](https://mongoing.com/docs/reference/glossary.html#term-dot-notation) 匹配所有 `dadges` 数组的第一个元素为``”black”`` 的文档:
+在下面的例子中,查询使用 "**.**"匹配所有 `dadges` 数组的第一个元素为``”black”`` 的文档:
 
 ```shell
 # mongoDB命令行
@@ -747,7 +750,7 @@ filter :=  bson.M{
     "$elemMatch": bson.M{
       "$gt": 15,
       "$lt": 20,
-    }
+    },
   },
 }
 cursor, err := db.Collection("users").Find(ctx, filter)
@@ -786,7 +789,7 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 #### 元素组合满足查询条件
 
-下面的例子查询 `finished` 数组包含以某种组合满足查询条件的元素的文档;例如,一个元素满足大于 `15` 的条件并且有另一个元素满足小于 `20` 的条件,或者有一个元素满足了这两个条件：
+下面的例子查询 `finished` 数组包含以**某种组合**满足查询条件的元素的文档;例如,一个元素满足大于 `15` 的条件并且有另一个元素满足小于 `20` 的条件,或者有一个元素满足了这两个条件：
 
 ```shell
 # mongoDB命令行
@@ -850,9 +853,7 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 
 #### 使用数组索引匹配嵌入文档中的字段
 
-在下面的例子中,查询使用 the [*dot notation*](https://mongoing.com/docs/reference/glossary.html#term-dot-notation) 匹配所有 `dadges` 是第一个元素为``”black”`` 的数组的文档:
-
-如果你知道内嵌文档的数组索引，你可以使用 [*dot notation*](https://mongoing.com/docs/reference/glossary.html#term-dot-notation) 及内嵌文档的位置指定文档。
+如果你知道内嵌文档的数组索引，你可以使用"**.**"及内嵌文档的位置指定文档。
 
 ```shell
 # mongoDB命令行
@@ -1032,6 +1033,10 @@ cursor, err := db.Collection("users").Find(ctx, filter)
 }
 ```
 
+注意：**只要出现操作符`$elemMatch`，那么一定指的是单个元素必须满足所以条件。**
+
+
+
 ## 返回查询的映射字段
 
 ### 映射文档
@@ -1046,7 +1051,7 @@ The `<value>` can be any of the following:
 
 - `1` 或 `true` 在返回的文档中包含字段。
 - `0` 或者 `false` 排除该字段。
-- 使用 [*Projection Operators*](https://mongoing.com/docs/reference/operator/projection.html) 的表达式。
+- 使用 [*Projection Operators*](https://mongoing.com/docs/reference/operator/projection.html) 的表达式，相当于mysql的field字段筛选。
 
 ### 返回匹配文档的所有字段
 
@@ -1178,7 +1183,9 @@ cursor, err := db.Collection("users").Find(ctx, filter, option)
 
 ### 返回嵌入文档中的指定字段
 
-使用 [*dot notation*](https://mongoing.com/docs/core/document.html#document-dot-notation) 返回嵌入文档中的特定字段
+使用"**.**"返回嵌入文档中的特定字段
+
+这种用法当在嵌入文档中字段比较多的情况下，特别有用，可以减少不少必要的开销；
 
 下面的示例指定了一个映射，返回 `_id` 字段、`name` 字段、 `status` 字段以及 `favorites` 文档中的 `food` 字段， `food` 仍然保持嵌入在 `favorites` 文档中。
 
@@ -1214,7 +1221,7 @@ cursor, err := db.Collection("users").Find(ctx, filter, option)
 
 ### 排除嵌入文档中的特定字段
 
-Use [*dot notation*](https://mongoing.com/docs/core/document.html#document-dot-notation) to suppress specific fields of an embedded document using a `0` instead of `1`.
+使用"**.**"连接排除嵌入文档的指定字段
 
 下面的示例指明了排除 `favorites` 文档中 `food` 字段的映射。所有其他字段都会在匹配的文档中返回：
 
@@ -1278,7 +1285,7 @@ cursor, err := db.Collection("users").Find(ctx, filter, option)
 
 ### 映射数组中的嵌入文档
 
-使用 [*dot notation*](https://mongoing.com/docs/core/document.html#document-dot-notation) 映射嵌入在数组中文档的特定字段。
+使用"**.**"映射嵌入在数组中文档的特定字段。
 
 下面的示例指明映射返回 `name` 字段、 `status` 字段，以及 `points` 数组的文档中包含 `bonus` 字段的文档。 默认返回 `_id` 。
 
@@ -1343,7 +1350,7 @@ cursor, err := db.Collection("users").Find(ctx, filter, option)
 { "_id" : 6, "name" : "abc", "status" : "A", "points" : [ { "points" : 57, "bonus" : 7 } ] }
 ```
 
-下面的示例使用  $elemMatch 映射操作符来返回  points数组中 第一个匹配条件的子元素。
+下面的示例使用  $elemMatch 映射操作符来返回  points数组中 **第一个匹配条件的子元素**。
 
 ```shell
 db.getCollection("users").find({ status: "A" }, { name: 1, status: 1, points: { $elemMatch: {bonus:{$lt:10}} } })
