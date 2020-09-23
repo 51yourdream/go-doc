@@ -6,8 +6,22 @@
 
 用途：eqfield=Field  必须等于 Field 的值；
 
-```
-实例描述
+```go
+validate := validator.New()
+	type RegisterInfo struct {
+		Username			string				`validate:"required"`
+		Password			string				`validate:"required"`
+		ConfirmPassword		string				`validate:"eqfield=Password"`
+	}
+	registerInfo := RegisterInfo{
+		Username: "lisi",
+		Password: "123456",
+		ConfirmPassword: "654321",
+	}
+	errs := validate.Struct(registerInfo)
+	//验证 ConfirmPassword == Password
+	//errs Key: 'RegisterInfo.ConfirmPassword' Error:Field validation for 'ConfirmPassword' failed on the 'eqfield' tag
+	fmt.Printf("errs %v", errs)
 ```
 
 ### nefield
@@ -53,6 +67,33 @@
 
 用途：ltecsfield=Other.Field 必须小于等于 struct Other 中 Field 的值；
 
+```go
+validate := validator.New()
+	type Inner struct {
+		StartDate time.Time
+	}
+	type Outer struct {
+		InnerStructField *Inner
+		CreatedAt time.Time      `validate:"ltecsfield=InnerStructField.StartDate"`
+	}
+	now := time.Now()
+
+	inner := &Inner{
+		StartDate: now,
+	}
+	parse, _ := time.Parse("2006-01-02 15:04:05", "2020-09-23 23:30:10")
+	outer := &Outer{
+		InnerStructField: inner,
+		CreatedAt: parse,
+	}
+	errs := validate.Struct(outer)
+	//CreatedAt 不小于等于 InnerStructField.StartDate
+	//errs Key: 'Outer.CreatedAt' Error:Field validation for 'CreatedAt' failed on the 'ltecsfield' tag
+	fmt.Printf("errs %v", errs)
+```
+
+
+
 ## 网络相关验证
 
 ### cidr
@@ -77,11 +118,11 @@
 
 ### hostname
 
-用途：根据[RFC 952](https://tools.ietf.org/html/rfc952) 验证字符串值是否为有效主机名
+用途：根据[RFC 952](https://tools.ietf.org/html/rfc952) 验证字符串值是否为合法主机名
 
 ### hostname_port
 
-用途：验证字符串是否为有效的主机名+端口号
+用途：验证字符串是否为合法的主机名+端口号
 
 ### hostname_rfc1123
 
@@ -151,9 +192,49 @@
 
 用途：验证字符串是否是有效的url
 
+```go
+validate := validator.New()
+	type UrlInfo struct{
+		Uri string `validate:"uri"`
+		Url string	`validate:"url"`
+	}
+	uriInfo := UrlInfo{
+		// /user/add 合法uri
+		Uri: "user/add",
+		// http://baidu.com 合法url需要 协议开头
+		Url: "baidu.com",
+	}
+	errs := validate.Struct(uriInfo)
+	//errs Key: 'UrlInfo.Uri' Error:Field validation for 'Uri' failed on the 'uri' tag
+	//Key: 'UrlInfo.Url' Error:Field validation for 'Url' failed on the 'url' tag
+	fmt.Printf("errs %v", errs)
+```
+
+
+
 ### url_encoded
 
 用途：验证字符串是否符合url_encode后的值
+
+```go
+validate := validator.New()
+	type UrlInfo struct{
+		Uri 		string `validate:"uri"`
+		Url 		string	`validate:"url"`
+		UrlEncode 	string	`validate:"url_encoded"`
+	}
+	uriInfo := UrlInfo{
+		Uri: "/user/add",
+		Url: "http://baidu.com",
+		// http%3A%2F%2Fbaidu.com
+		UrlEncode: "http://baidu.com",
+	}
+	errs := validate.Struct(uriInfo)
+	//errs Key: 'UrlInfo.UrlEncode' Error:Field validation for 'UrlEncode' failed on the 'url_encoded' tag
+	fmt.Printf("errs %v", errs)
+```
+
+
 
 ### urn_rfc2141
 
@@ -182,6 +263,28 @@
 ### ascii
 
 用途：验证字符串值是否仅包含ASCII字符。注意：如果字符串为空，则验证为true
+
+```go
+validate := validator.New()
+	type AlphaInfo struct{
+		Alpha 				string 	`validate:"alpha"`
+		Alphanum 			string	`validate:"alphanum"`
+		Alphanumunicode 	string	`validate:"alphanumunicode"`
+		Alphaunicode 		string	`validate:"alphaunicode"`
+		Ascii				string 	`validate:"ascii"`
+	}
+	alphaInfo := AlphaInfo{
+		Alpha: "qqq",
+		Alphanum: "134",
+		Alphanumunicode: "134q",
+		Alphaunicode: "q",
+		Ascii: "q,.",
+	}
+	errs := validate.Struct(alphaInfo)
+	fmt.Printf("errs %v", errs)
+```
+
+
 
 ### contains
 
