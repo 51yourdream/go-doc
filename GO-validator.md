@@ -266,19 +266,19 @@ validate := validator.New()
 
 ```go
 validate := validator.New()
-	type AlphaInfo struct{
-		Alpha 				string 	`validate:"alpha"`
-		Alphanum 			string	`validate:"alphanum"`
-		Alphanumunicode 	string	`validate:"alphanumunicode"`
-		Alphaunicode 		string	`validate:"alphaunicode"`
-		Ascii				string 	`validate:"ascii"`
+	type alphaInfoStruct struct{
+		Alpha 				string 	`validate:"alpha"` //是否仅包含ASCII字母字符
+		Alphanum 			string	`validate:"alphanum"` //是否仅包含ASCII字母数字字符
+		Alphanumunicode 	string	`validate:"alphanumunicode"` //是否仅包含unicode字母数字字符
+		Alphaunicode 		string	`validate:"alphaunicode"` //是否仅包含unicode字符
+		Ascii				string 	`validate:"ascii"` //是否仅包含ASCII字符。注意：如果字符串为空，则验证为true
 	}
-	alphaInfo := AlphaInfo{
-		Alpha: "qqq",
-		Alphanum: "134",
-		Alphanumunicode: "134q",
-		Alphaunicode: "q",
-		Ascii: "q,.",
+	alphaInfo := alphaInfoStruct{
+		Alpha: "abc",
+		Alphanum: "abc134",
+		Alphanumunicode: "你好世界helloworld123",
+		Alphaunicode: "你好世界helloworld",
+		Ascii: "@)*",
 	}
 	errs := validate.Struct(alphaInfo)
 	fmt.Printf("errs %v", errs)
@@ -297,6 +297,52 @@ validate := validator.New()
 ### containsrune
 
 用途：containsrune=@    验证字符串值是否包含提供的符文值
+
+```go
+	validate := validator.New()
+	type containsStruct struct {
+		Contains			string		`validate:"contains=需要完全包含这里的整个字符串"`
+		Containsany			string		`validate:"containsany=至少需要包含任何一个这里的字符"`
+		Containsrune		string		`validate:"containsrune=至少需要包含任何一个这里的字符"`
+	}
+	contains := containsStruct{
+		Contains: "需要完全包含这里的整个字符串",
+		Containsany: "至少一个字符有交叉",
+		Containsrune: "至少一个字符有交叉",
+	}
+	errs := validate.Struct(contains)
+	fmt.Printf("errs %v", errs)
+```
+
+### excludes
+
+用途：验证字符串不能包含指定字符串；eg：excludes=hi，字符串不能包含"hi"
+
+### excludesall
+
+用途：验证字符串值在子字符串值中是否包含任何Unicode code points
+
+### excludesrune
+
+用途：验证字符串值是否包含提供的符文值
+
+```go
+	validate := validator.New()
+	type excludesStruct struct {
+		Excludes			string		`validate:"excludes=字符串中不能出现这里的整个子字符串"`
+		Excludesall			string		`validate:"excludesall=字符串中不能包含任何这里的一个字符"`
+		Excludesrune		string		`validate:"excludesrune=字符串中不能包含任何这里的一个字符"`
+	}
+	excludes := excludesStruct{
+		Excludes: "字符串中不能出现这里的【插入hello world就可以验证通过】整个子字符串",
+		Excludesall: "hello world通不过验证因为出现了相同字符",
+		Excludesrune: "字符串中不能包含任何这里的一个字符",
+	}
+	errs := validate.Struct(excludes)
+	fmt.Printf("errs %v", errs)
+```
+
+
 
 ### lowercase
 
@@ -473,18 +519,6 @@ todo
 ### endswith
 
 用途：验证字符串是否一xxx结尾；eg：endswith=hi，字符串是否以"hi"结尾
-
-### excludes
-
-用途：验证字符串不能包含指定字符串；eg：excludes=hi，字符串不能包含"hi"
-
-### excludesall
-
-用途：验证字符串值在子字符串值中是否包含任何Unicode code points
-
-### excludesrune
-
-用途：验证字符串值是否包含提供的符文值
 
 ### file
 
