@@ -356,6 +356,24 @@ validate := validator.New()
 
 用途：验证字符串值是否包含一个或多个**多字节字符**。注意：如果字符串为空，则验证为true
 
+```go
+validate := validator.New()
+	type stringStruct struct{
+		Lowercase 			string 	`validate:"lowercase"`
+		Uppercase 			string	`validate:"uppercase"`
+		Multibyte 			string	`validate:"multibyte"`
+	}
+	info := stringStruct{
+		Lowercase: "lowercase不能出现大写字母；可以出现中文；不能为空", //验证通过
+		Uppercase: "UPPERCASE不能出现小写字母；可以出现中文；不能为空", //验证通过
+		Multibyte: "Multibyte至少包含一个多字节字符",	//验证通过
+	}
+	errs := validate.Struct(info)
+	fmt.Printf("errs %v", errs)
+```
+
+
+
 ### number
 
 用途：验证字符串是否全是数字[不包括浮点数字符串]，对于整型或者浮点数可以通过验证
@@ -363,6 +381,30 @@ validate := validator.New()
 ### numeric
 
 用途：验证字符串是否全是基本数字[包括浮点数字符串，不包括指数等数值]，对于整型或者浮点数可以通过验证
+
+```go
+validate := validator.New()
+	type numberStruct struct {
+		NumberString	string	`validate:"number"`
+		NumberInt		int		`validate:"number"`
+		NumberFloat		float32	`validate:"number"`
+		NumericString	string	`validate:"numeric"`
+		NumericInt		int		`validate:"numeric"`
+		NumericFloat	float64	`validate:"numeric"`
+	}
+	info := numberStruct{
+		NumberString: "123456",
+		NumberInt: 31415,
+		NumberFloat: 3.1415,
+		NumericString: "31415",
+		NumericInt: 31415,
+		NumericFloat: 3.1415,
+	}
+	errs := validate.Struct(info)
+	fmt.Printf("errs %v", errs)
+```
+
+
 
 ### printascii
 
@@ -372,7 +414,9 @@ validate := validator.New()
 
 用途：startswith=hi 验证字符串是否是指定字符串开头
 
+### endswith
 
+用途：验证字符串是否一xxx结尾；eg：endswith=hi，字符串是否以"hi"结尾
 
 ## 格式化相关验证
 
@@ -424,11 +468,25 @@ todo
 
 ### html
 
-todo
-
 用途：验证字符串是否是html标签
 
+```go
+	validate := validator.New()
+	type htmlStruct struct {
+		Html	string	`validate:"html"`
+	}
+	info := htmlStruct{
+		Html: "<ab></ab>html包含html标签就行",
+	}
+	errs := validate.Struct(info)
+	fmt.Printf("errs %v", errs)
+```
+
+
+
 ### html_encoded
+
+todo
 
 用途：验证字符串值是十进制或十六进制格式的正确字符引用
 
@@ -490,6 +548,29 @@ todo
 
 用途：对于字符串和数字，eq将确保该值等于给定的参数。对于切片，数组和map，验证元素个数是否等于给定个数
 
+```go
+	validate := validator.New()
+	type eqStruct struct {
+		EqString	string				`validate:"eq=字符串"`
+		EqInt		int					`validate:"eq=3"`
+		EqFloat		float32				`validate:"eq=3.1"`
+		EqSlice		[]string			`validate:"eq=3"`
+		EqMap		map[string]string	`validate:"eq=3"`
+	}
+	info := eqStruct{
+		EqString: "字符串", //验证字符串相对
+		EqInt: 3,			//验证数字相等
+		EqFloat: 3.1,		//浮点数通不过验证
+		EqSlice: []string{"1", "2", "3"}, //slice 元素个数
+		EqMap: map[string]string{"name": "lisi", "age": "20", "hobby": "play game"}, //map 元素个数
+	}
+	errs := validate.Struct(info)
+	//errs Key: 'eqStruct.EqFloat' Error:Field validation for 'EqFloat' failed on the 'eq' tag相等
+	fmt.Printf("errs %v", errs)
+```
+
+
+
 ### gt
 
 用途：对于数字，这将确保该值大于给定的参数。对于字符串，它会检查字符串长度是否大于该字符数。对于切片，数组和map，它会验证元素个数是否大于给定个数。
@@ -516,21 +597,67 @@ todo
 
 用途：验证给定的字符串是否是一个合法的目录，并且是否存在当前机器上
 
-### endswith
-
-用途：验证字符串是否一xxx结尾；eg：endswith=hi，字符串是否以"hi"结尾
-
 ### file
 
 用途：验证字符串值是否包含有效的文件路径，并且该文件存在于当前计算机上
+
+```go
+validate := validator.New()
+	type fileDirStruct struct {
+		Dir			string				`validate:"dir"`
+		File		string				 `validate:"file"`
+	}
+	info := fileDirStruct{
+		Dir: "/tmp", 			///tmp 目录存在 验证通过
+		File: "/tmp/mysql.sock", ///tmp/mysql.sock 文件存在验证通过
+	}
+	errs := validate.Struct(info)
+	fmt.Printf("errs %v", errs)
+```
+
+
 
 ### isdefault
 
 用途：验证了该值是默认值，与必填值相反
 
+```go
+	validate := validator.New()
+	type isdefaultStruct struct {
+		Isdefault		bool			`validate:"isdefault"`
+	}
+	info := isdefaultStruct{
+		Isdefault: false, 			// bool 类型默认值：false 通过验证
+	}
+	errs := validate.Struct(info)
+	fmt.Printf("errs %v", errs)
+```
+
+
+
 ### len
 
 用途：对于数字，长度将确保该值等于给定的参数。对于字符串，它会检查字符串长度是否与字符数完全相同。对于切片，数组和map，验证元素个数是否与给定值相等；eg：len=10，10个字符中英文算一个
+
+```go
+validate := validator.New()
+	type lenStruct struct {
+		LenString	string				`validate:"len=3"`
+		LenInt		int					`validate:"len=3"`
+		LenSlice		[]string			`validate:"len=3"`
+		LenMap		map[string]string	`validate:"len=3"`
+	}
+	info := lenStruct{
+		LenString: "字符串", //验证字符个数，中英文算一个
+		LenInt: 3,			//验证数字相等
+		LenSlice: []string{"1", "2", "3"}, //slice 元素个数
+		LenMap: map[string]string{"name": "lisi", "age": "20", "hobby": "play game"}, //map 元素个数
+	}
+	errs := validate.Struct(info)
+	fmt.Printf("errs %v", errs)
+```
+
+
 
 ### max
 
@@ -544,6 +671,24 @@ todo
 
 用途：对于字符串，整数和uint，oneof将确保该值是参数中的值之一。参数应该是由空格分隔的值列表。值可以是字符串或数字；eg：oneof=1 3 输入值必须是1或者3其中的任意一个
 
+```go
+validate := validator.New()
+	type oneofStruct struct {
+		OneOfString	string						`validate:"oneof='12' '13'"`
+		OneOfInt	int							`validate:"oneof=1 2"`
+		OneOfInterface	interface{}				`validate:"oneof=1 2 a"`
+	}
+	info := oneofStruct{
+		OneOfString: "12",
+		OneOfInt: 2,
+		OneOfInterface: "a",
+	}
+	errs := validate.Struct(info)
+	fmt.Printf("errs %v", errs)
+```
+
+
+
 ### required
 
 用途：验证该值不是数据类型的默认零值。数字不为０，字符串不为 " ", slices, maps, pointers, interfaces, channels and functions 不为 nil
@@ -555,6 +700,46 @@ todo
 ### required_with_all
 
 用途：required_with_all=Field1 Field2 只有Field1 Field2 required的时候，当前字段验证才生效
+
+```go
+validate := validator.New()
+	type requireStruct struct {
+		Username			string
+		Age					int				`validate:"required_with=Username"` //当Username有值 required 现在才生效
+		Height				uint8			`validate:"required_with_all=Username Age"` //当Username Age 都有值 required 现在才生效
+	}
+	info := requireStruct{
+		Username: "",
+	}
+	errs := validate.Struct(info)
+	fmt.Printf("errs %v \n", errs)
+
+
+	info = requireStruct{
+		Username: "lisi",
+	}
+	errs = validate.Struct(info)
+	//errs Key: 'requireStruct.Age' Error:Field validation for 'Age' failed on the 'required_with' tag
+	fmt.Printf("errs %v \n", errs)
+
+	info = requireStruct{
+		Username: "lisi",
+		Age: 20,
+	}
+	errs = validate.Struct(info)
+	//errs Key: 'requireStruct.Height' Error:Field validation for 'Height' failed on the 'required_with_all' tag
+	fmt.Printf("errs %v \n", errs)
+
+	info = requireStruct{
+		Username: "lisi",
+		Age: 20,
+		Height: 175,
+	}
+	errs = validate.Struct(info)
+	fmt.Printf("errs %v \n", errs)
+```
+
+
 
 ### required_without
 
@@ -609,9 +794,13 @@ func main()  {
 }
 ```
 
+## 自定义验证方法
 
+todo
 
+## gin中validator
 
+todo
 
 
 
