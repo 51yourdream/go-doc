@@ -422,8 +422,6 @@ validate := validator.New()
 
 ### base64
 
-todo 
-
 用途：验证字符串值是否是有效的base64值。虽然空字符串是有效的base64，但这会将空字符串报告为错误，如果希望接受空字符串作为有效字符，则可以将此字符串与omitempty标记一起使用，eg:base64,omitempty。
 
 ### base64url
@@ -485,8 +483,6 @@ todo
 
 
 ### html_encoded
-
-todo
 
 用途：验证字符串值是十进制或十六进制格式的正确字符引用
 
@@ -796,15 +792,116 @@ func main()  {
 
 ## 自定义验证方法
 
-todo
+```go
+var validate *validator.Validate
+
+func init()  {
+	validate =  validator.New()
+  //注册验证方法
+	_ = validate.RegisterValidation("custom", customFunc)
+}
+
+//自定义验证方法 这自定义方法里面做校验，
+func customFunc(fl validator.FieldLevel) bool {
+	fmt.Printf("fl.Param %v \n", fl.Param())
+	fmt.Printf("fl.GetTag %v \n", fl.GetTag())
+	fmt.Printf("fl.Field %v \n", fl.Field())
+	fmt.Printf("fl.FieldName %v \n", fl.FieldName())
+	value, kind, nullable := fl.ExtractType(fl.Field())
+	fmt.Printf("fl.ExtractType(fl.Field()) value:%v kind:%v nullabel:%v \n", value, kind, nullable)
+	fmt.Println("=============")
+	return true
+}
+//测试校验
+func custom()  {
+	type customStruct struct {
+		Username 					string
+		Custom						string		`validate:"custom=这是验证参数"`
+		CustomParent				string		`validate:"custom=Username"`
+	}
+	excludes := customStruct{
+		Username: "用户名称",
+		Custom: "这是传递参数",
+		CustomParent: "这是parent传递参数",
+	}
+  /**
+	fl.Param 这是验证参数 
+	fl.GetTag custom 
+	fl.Field 这是传递参数 
+	fl.FieldName Custom 
+	fl.ExtractType(fl.Field()) value:这是传递参数 kind:string nullabel:false 
+	=============
+	fl.Param Username 
+	fl.GetTag custom 
+	fl.Field 这是parent传递参数 
+	fl.FieldName CustomParent 
+	fl.ExtractType(fl.Field()) value:这是parent传递参数 kind:string nullabel:false 
+	=============
+	 */
+	errs := validate.Struct(excludes)
+
+	fmt.Printf("errs %v", errs)
+}
+
+```
 
 ## gin中validator
 
-todo
+通过 binding tag 来绑定 validator的验证方法
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+)
+
+type validatorRegister struct {
+	Username 			string			`form:"username" json:"username" binding:"required"`
+	Password 			string			`form:"password" json:"password" binding:"required,min=6,max=12"`
+	ConfirmPassword 	string			`form:"confirm_password" json:"confirm_password" binding:"eqfield=Password"`
+}
+
+
+func main()  {
+	r := gin.Default()
+	r.POST("/register", func(c *gin.Context) {
+
+		var params validatorRegister
+		var result interface{}
+		err := c.ShouldBind(&params)
+
+		fmt.Printf("params：%v \n", params)
+		fmt.Printf("err：%v \n", err)
+
+		if err == nil {
+			result = params
+		}else{
+			result = err.Error()
+		}
+
+		c.JSON(200, gin.H{
+			"code": 0,
+			"message": "success",
+			"result": result,
+		})
+	})
+	_ = r.Run("127.0.0.1:8089") 
+}
+
+```
+
+1. 所有条件都不符合 form-data 传参
+   1. ![image-20200925110245229](./img/image-20200925110245229.png)
+
+2. 密码不一致 
+   1. ![image-20200925110415339](./img/image-20200925110415339.png)
 
 
 
+3. 所有条件均满足
+   1. ![image-20200925110526527](./img/image-20200925110526527.png)
 
-
-
-
+4. post  json 传参
+   1. ![image-20200925110736108](./img/image-20200925110736108.png)
